@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#11161f">
+<meta name="description" content="Bulwark TDS - an original unit-placement tower defense. Build a 5-unit loadout, hold 40 waves and beat the Monolith.">
+<title>Bulwark TDS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 56 14v18c0 14-10 24-24 28C18 56 8 46 8 32V14z' fill='%23ffb53b' stroke='%2311161f' stroke-width='4'/%3E%3Cpath d='M20 30h24M32 18v26' stroke='%2311161f' stroke-width='6'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#11161f;--pl:#1b2330;--pl2:#253042;--ln:#3a4a63;--tx:#e9eef5;--mu:#93a1b5;--ac:#ffb53b;--ac2:#ff7a3b;--ok:#6fdc8c;--bad:#ff5a5a;--blu:#4fa8ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:600 14px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
+#cv{display:block;image-rendering:auto;touch-action:none;border-radius:6px;box-shadow:0 10px 40px #0008}
+.scr{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:14px;background:radial-gradient(ellipse at center,#11161fcc,#0b0f16f2);z-index:20;overflow-y:auto}
+.scr.on{display:flex}
+.card{background:linear-gradient(180deg,var(--pl2),var(--pl));border:2px solid var(--ln);border-radius:14px;padding:18px;width:min(760px,100%);max-height:100%;overflow-y:auto;box-shadow:0 20px 60px #000a,inset 0 1px 0 #ffffff14}
+h1,h2,h3{margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em}
+h2{font-size:20px;color:var(--ac)}
+.logo{font:900 clamp(38px,9vw,74px)/0.9 Impact,"Arial Black",system-ui,sans-serif;letter-spacing:.04em;text-align:center;color:var(--ac);text-shadow:0 4px 0 #a5571a,0 8px 0 #0006,0 0 30px #ffb53b55;margin:6px 0}
+.logo small{display:block;font-size:.36em;color:var(--tx);letter-spacing:.5em;text-shadow:0 2px 0 #0008;margin-top:6px}
+.tag{text-align:center;color:var(--mu);margin:0 0 14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:10px;background:linear-gradient(180deg,#34445e,#26334a);border:2px solid #4b5f80;font-weight:800;text-transform:uppercase;letter-spacing:.05em;box-shadow:0 3px 0 #0b0f16;transition:transform .08s,filter .15s}
+.btn:hover{filter:brightness(1.15)}.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0b0f16}
+.btn.pri{background:linear-gradient(180deg,#ffc45c,#f08a24);border-color:#ffd88f;color:#2a1600}
+.btn.dis,.btn:disabled{opacity:.45;pointer-events:none}
+.col{display:flex;flex-direction:column;gap:9px;width:min(320px,100%);margin:0 auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:flex;align-items:center;gap:10px;justify-content:center;background:#0c111a99;border:1px solid var(--ln);border-radius:999px;padding:6px 14px;margin:0 auto 14px;width:max-content;max-width:100%;flex-wrap:wrap}
+.xpb{width:110px;height:8px;background:#0008;border-radius:9px;overflow:hidden}.xpb i{display:block;height:100%;background:linear-gradient(90deg,var(--blu),#9fe0ff)}
+.coin{color:var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+.tile{background:#0d131c;border:2px solid var(--ln);border-radius:11px;padding:9px;text-align:left;position:relative}
+.tile.sel{border-color:var(--ac);box-shadow:0 0 0 2px #ffb53b44}
+.tile.lock{opacity:.55}
+.tile b{display:block}.tile small{color:var(--mu);display:block}
+.tile canvas{display:block;margin:0 auto 4px}
+.badge{position:absolute;top:6px;right:7px;font-size:11px;padding:1px 6px;border-radius:6px;background:#000a}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px}
+.slot{height:78px;background:#0b0f16;border:2px dashed var(--ln);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:11px;color:var(--mu)}
+.slot.f{border-style:solid;border-color:var(--ac);color:var(--tx)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs .btn{flex:1}.tabs .btn.on{border-color:var(--ac);color:var(--ac)}
+.q{display:flex;gap:10px;align-items:center;background:#0d131c;border:1px solid var(--ln);border-radius:10px;padding:10px;margin-bottom:8px}
+.q .bar{height:8px;background:#0008;border-radius:9px;overflow:hidden;margin-top:5px}.q .bar i{display:block;height:100%;background:var(--ok)}
+.q>div{flex:1}
+p{margin:0 0 9px;color:#c7d0dd}
+.how b{color:var(--ac)}
+/* HUD */
+#hud{display:none;position:relative;z-index:5}
+#hud.on{display:block}
+#top{display:flex;gap:6px;padding:6px;align-items:center;justify-content:space-between;pointer-events:none;z-index:6}
+#top>*{pointer-events:auto}
+.pill{background:#0b0f16d9;border:1px solid var(--ln);border-radius:9px;padding:5px 9px;font-weight:800;white-space:nowrap}
+.pill .k{color:var(--mu);font-size:11px;margin-right:4px}
+#tl,#tr{display:flex;gap:5px;flex-wrap:wrap}
+#tr .btn{padding:6px 10px;font-size:13px}
+#bar{display:none;gap:6px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));justify-content:center;background:linear-gradient(180deg,#151c27,#0d121a);border-top:2px solid var(--ln);z-index:6}
+#bar.on{display:flex}
+.uc{width:min(86px,19vw);background:#0d131c;border:2px solid var(--ln);border-radius:10px;padding:4px 2px;text-align:center;font-size:11px;position:relative}
+.uc canvas{display:block;margin:0 auto;width:44px;height:44px}
+.uc.sel{border-color:var(--ac);background:#2a2110}
+.uc.poor{opacity:.5}
+.uc .kb{position:absolute;left:4px;top:2px;color:var(--mu);font-size:10px}
+#wbtn{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:7;display:none}
+#wbtn.on{display:inline-flex}
+#panel{position:absolute;right:8px;top:8px;width:236px;z-index:8;display:none;background:linear-gradient(180deg,#223047f2,#161e2cf2);border:2px solid var(--ln);border-radius:12px;padding:10px}
+#panel.on{display:block}
+#panel .st{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:12px;color:var(--mu);margin:6px 0}
+#panel .st span b{color:var(--tx)}
+#panel .btn{padding:7px 8px;font-size:12px;flex:1}
+#panel .nx{font-size:11px;color:var(--ok);margin:4px 0}
+#boss{position:absolute;left:50%;top:4px;transform:translateX(-50%);width:min(420px,70%);display:none;z-index:6;text-align:center;font-size:12px}
+#boss.on{display:block}
+#boss .bb{height:12px;background:#000a;border:1px solid #fff3;border-radius:6px;overflow:hidden}#boss .bb i{display:block;height:100%;background:linear-gradient(90deg,#ff3b5c,#ff9a3b)}
+#toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);font:900 clamp(22px,5vw,40px) Impact,"Arial Black",sans-serif;letter-spacing:.06em;color:var(--ac);text-shadow:0 3px 0 #000a;pointer-events:none;z-index:30;opacity:0;transition:opacity .3s;text-align:center;white-space:normal;width:max-content;max-width:92vw}
+#toast.on{opacity:1}
+#crate{display:none;flex-direction:column;align-items:center;gap:10px;padding:16px}
+#crate.on{display:flex}
+.cbox{width:120px;height:120px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:48px;animation:shake .5s infinite}
+@keyframes shake{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) scale(1.05)}}
+.rev{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+@media (orientation:portrait),(max-width:720px){
+ #panel{left:8px;right:8px;width:auto;top:auto;bottom:8px}
+ #wbtn{bottom:auto;top:30px}
+}
+#rot{display:none;position:absolute;left:0;right:0;bottom:10px;text-align:center;color:var(--mu);font-size:12px;z-index:4}
+@media (orientation:portrait) and (max-width:600px){#hud.on~#stage #rot{display:block}}
+@media (max-height:460px){.uc canvas{width:30px;height:30px}.uc{padding:2px}#top{padding:3px 6px}#bar{padding-top:3px;padding-bottom:3px}}
+@media (max-width:420px){.btn{padding:10px 12px}.card{padding:13px}.grid{grid-template-columns:repeat(2,1fr)}.pill{padding:4px 6px;font-size:12px}#tr .btn{padding:5px 7px}}
+</style>
+</head>
+<body>
+<div id="app">
+ <div id="hud">
+  <div id="top">
+   <div id="tl"><div class="pill" title="Bulwark HP"><span class="k">HP</span><span id="hHp">0</span></div><div class="pill"><span class="k">$</span><span id="hCash" class="coin">0</span></div><div class="pill"><span class="k">WAVE</span><span id="hWave">0</span></div></div>
+   <div id="tr"><button class="btn" id="bSpd" title="Speed (F)">1x</button><button class="btn" id="bSnd" title="Sound">&#9835;</button><button class="btn" id="bPause" title="Pause (P)">II</button></div>
+  </div>
+ </div>
+ <div id="stage">
+  <canvas id="cv" width="960" height="480"></canvas>
+  <div id="boss"><div id="bossN">BOSS</div><div class="bb"><i id="bossF"></i></div></div>
+  <div id="toast"></div>
+  <div id="rot">&#8635; Tip: turn your phone sideways for a bigger battlefield</div>
+  <button class="btn pri" id="wbtn">Start Wave</button>
+  <div id="panel"></div>
+
+  <section class="scr on" id="sTitle"><div class="card" style="width:min(460px,100%)">
+   <div class="logo">BULWARK<small>TOWER DEFENSE</small></div>
+   <p class="tag">Hold the line. 40 waves. One Monolith.</p>
+   <div class="chip"><span>Lv <b id="pLv">1</b></span><div class="xpb"><i id="pXp"></i></div><span class="coin"><b id="pCoins">0</b> coins</span></div>
+   <div class="col">
+    <button class="btn pri" data-go="sPlay">&#9654; Play</button>
+    <button class="btn" id="bCont">Continue run</button>
+    <button class="btn" data-go="sLoad">Loadout &amp; Skins</button>
+    <button class="btn" data-go="sShop">Shop &amp; Crates</button>
+    <button class="btn" data-go="sQuest">Daily Quests <span id="qDot" class="coin"></span></button>
+    <button class="btn" data-go="sHow">How to play</button>
+    <button class="btn" id="bSnd2">Sound: On</button>
+   </div>
+  </div></section>
+
+  <section class="scr" id="sPlay"><div class="card">
+   <h2>Choose a map</h2><div class="grid" id="mapGrid"></div>
+   <h2 style="margin-top:14px">Mode</h2><div class="row" id="modeRow"></div>
+   <p id="modeD" style="margin-top:8px"></p>
+   <div class="row" style="justify-content:space-between;margin-top:8px"><button class="btn" data-go="sTitle">Back</button><button class="btn pri" id="bDeploy">Deploy &#9654;</button></div>
+  </div></section>
+
+  <section class="scr" id="sLoad"><div class="card">
+   <h2>Loadout <small style="color:var(--mu);font-size:12px">pick 5 units</small></h2>
+   <div class="slots" id="slots"></div>
+   <div class="grid" id="unitGrid"></div>
+   <div id="skinBox" style="margin-top:12px"></div>
+   <div class="row" style="margin-top:12px"><button class="btn" data-go="sTitle">Back</button></div>
+  </div></section>
+
+  <section class="scr" id="sShop"><div class="card">
+   <h2>Shop <span class="coin" style="float:right"><b id="sCoins">0</b> coins</span></h2>
+   <div class="tabs"><button class="btn on" data-tab="units">Units</button><button class="btn" data-tab="crates">Crates</button></div>
+   <div id="shopBody"></div>
+   <div id="crate"></div>
+   <p style="font-size:12px;color:var(--mu);margin-top:10px">Coins are earned only by playing. Skins are cosmetic. There are no real-money purchases.</p>
+   <div class="row"><button class="btn" data-go="sTitle">Back</button></div>
+  </div></section>
+
+  <section class="scr" id="sQuest"><div class="card" style="width:min(520px,100%)">
+   <h2>Daily Quests</h2><p style="color:var(--mu)">New quests every day. Progress counts in any mode.</p>
+   <div id="qList"></div>
+   <div class="row"><button class="btn" data-go="sTitle">Back</button></div>
+  </div></section>
+
+  <section class="scr" id="sHow"><div class="card how" style="width:min(560px,100%)">
+   <h2>How to play</h2>
+   <p>Enemies march along the path toward your <b>Bulwark</b>. Pick a unit from the bottom bar, then click or tap a tile to deploy it. Some units only fit on <b>ground</b>, some only on raised <b>cliffs</b>.</p>
+   <p>Click a unit to <b>upgrade</b> (4 levels, its look changes), <b>sell</b>, change <b>targeting</b> (First / Last / Strong / Close) and fire its <b>ability</b> (unlocks at level 2).</p>
+   <p><b>Hidden</b> enemies shimmer and need detection (Spotter, or upgraded units). <b>Flyers</b> can only be hit by anti-air capable units. <b>Plated</b> enemies shrug off weak hits, <b>Aegis</b> carry shields, <b>Tenders</b> heal and <b>Jammers</b> shut your units down unless a Mender Drone is near.</p>
+   <p>Mini-bosses arrive on waves 10, 20, 25, 30 and 35. Wave 40 brings <b>The Monolith</b>, a three-phase boss.</p>
+   <p>Keys: <b>1-5</b> pick unit, <b>U</b> upgrade, <b>X</b> sell, <b>T</b> targeting, <b>Q</b> ability, <b>Space</b> start/skip wave, <b>F</b> speed, <b>P</b> pause, <b>Esc</b> cancel.</p>
+   <p>Every run earns coins and XP. Spend coins on new units and crates of cosmetic skins. Your run is saved between waves.</p>
+   <div class="row"><button class="btn" data-go="sTitle">Back</button></div>
+  </div></section>
+
+  <section class="scr" id="sPause"><div class="card" style="width:min(340px,100%);text-align:center">
+   <h2>Paused</h2>
+   <div class="col"><button class="btn pri" id="bResume">Resume</button><button class="btn" id="bSnd3">Sound: On</button><button class="btn" id="bQuit">Save &amp; quit</button><button class="btn" id="bAbandon">Abandon run</button></div>
+  </div></section>
+
+  <section class="scr" id="sEnd"><div class="card" style="width:min(420px,100%);text-align:center">
+   <div class="logo" id="eT" style="font-size:52px">VICTORY</div>
+   <p id="eS"></p>
+   <div id="eR" style="margin:10px 0 14px"></div>
+   <div class="col"><button class="btn pri" id="bAgain">Play again</button><button class="btn" id="bMenu">Main menu</button></div>
+  </div></section>
+ </div>
+ <div id="bar"></div>
+</div>
+<script src="data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
